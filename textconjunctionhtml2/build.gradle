@@ -8,12 +8,12 @@ publish {
     def publishVersionID = '0.1.0'
 
     userOrg = 'superdiazzz'
-    repoName = 'repository_name'
+    repoName = 'WidgetConjunctionHtml'
     groupId = groupProjectID
     artifactId = artifactProjectID
     publishVersion = publishVersionID
     desc = 'This library is used to break html data into different widgets in Android'
-    //website = '{github_url}
+    website = 'https://github.com/superdiazzz/WidgetConjunctionHtml'
 
 }
 
