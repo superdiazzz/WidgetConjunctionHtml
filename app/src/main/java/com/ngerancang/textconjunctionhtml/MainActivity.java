@@ -1,42 +1,74 @@
 package com.ngerancang.textconjunctionhtml;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.widget.ImageView;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.ngerancang.textconjunctionhtml2.WidgetConjunction;
+import com.ngerancang.textconjunctionhtml2.widget.OpenImageView;
+import com.ngerancang.textconjunctionhtml2.widget.OpenYoutubeView;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final String TAG = "MainActivity";
+
+    private LinearLayout content;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // initialize html conjunction
 
-        String articleHtml = "<p>JUDUL ATAS</p>\n" +
-                "<p>lorem lorem ipsum ipsum bla bla bla</p>\n" +
+        content = findViewById(R.id.content);
+
+        // initialize html conjunction
+        String articleHtml = "<p><b>JUDUL ATAS</b></p>\n" +
+                "<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>\n" +
                 "<figure>Bagian figure adalah bagian dilain text html</figure>\n" +
                 "<p>paragraf lagi lagi lorem lorem ipsum balabala</p>\n" +
-                "<id>NAMA JOEL JOEL JOEL</id>\n" +
-                "<p>ini last paragraph ya ya ya ya jisjisijs </p>";
+                "<p>NAMA JOEL JOEL JOEL</p>\n" +
+                "<img src=\"https://news.nationalgeographic.com/content/dam/news/2018/05/17/you-can-train-your-cat/02-cat-training-NationalGeographic_1484324.ngsversion.1526587209178.adapt.1900.1.jpg\">"+
+                "<h3>1914 translation by H. Rackham</h3>"+
+                "<p>\"Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque " +
+                "laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae " +
+                "dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur" +
+                " magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, " +
+                "consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat " +
+                "voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea " +
+                "commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, " +
+                "vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?\"</p>"+
+                "<iframe width=\"420\" height=\"345\" src=\"https://www.youtube.com/embed/0uRwqpDX1Us\"</iframe>";
 
-        String[] tagForWrapping = {"figure", "id"};
-        WidgetConjunction conjunction = new WidgetConjunction(this, tagForWrapping,
-                new WidgetConjunction.OnTextConjunctionListener() {
+        String[] tagForWrapping = {"figure", "img", "h3", "iframe"};
+
+        WidgetConjunction conjunction1 = new WidgetConjunction.Builder(this)
+                .setOnTextConjunctionListener(new WidgetConjunction.OnTextConjunctionListener() {
                     @Override
                     public void callBackForOpenTextView(TextView tv) {
+                        content.addView(tv);
 
                     }
 
                     @Override
-                    public void callBackForOpenImageView(TextView cap, ImageView im) {
-
+                    public void callBackForOpenImageView(TextView cap, OpenImageView im) {
+                        content.addView(im);
+                        //content.addView(cap); //if you need caption below of image, but make sure your caption already wrap insid
                     }
-                });
-        conjunction.breakContent(articleHtml);
+
+                    @Override
+                    public void callBackForYoutubeView(OpenYoutubeView openYoutubeView, String ytID) {
+                        content.addView(openYoutubeView);
+                        Log.d(TAG, "callBackForYoutubeView: YoutubeID " + ytID);
+                    }
+                })
+                .setAlienTag(tagForWrapping)
+                .setTagCaption("figcaption")
+                .build();
+        conjunction1.breakContent(articleHtml);
+
 
     }
 }

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Build;
+import android.support.annotation.NonNull;
 import android.text.Html;
 import android.text.SpannableStringBuilder;
 import android.text.method.LinkMovementMethod;
@@ -18,7 +19,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.ngerancang.textconjunctionhtml2.model.ContentArticle;
+import com.ngerancang.textconjunctionhtml2.widget.OpenImageView;
 import com.ngerancang.textconjunctionhtml2.widget.OpenTextView;
+import com.ngerancang.textconjunctionhtml2.widget.OpenYoutubeView;
 import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
@@ -37,19 +40,23 @@ public class WidgetConjunction {
     private Activity activity;
     private OnTextConjunctionListener onTextConjunctionListener;
     private String[] alienTag;
+    private String tagCaption;
 
     public interface OnTextConjunctionListener {
 
         void callBackForOpenTextView(TextView tv);
 
-        void  callBackForOpenImageView(TextView cap, ImageView im);
+        void  callBackForOpenImageView(TextView cap, OpenImageView im);
+
+        void callBackForYoutubeView(OpenYoutubeView openYoutubeView, String ytID);
     }
 
     // initialize
-    public WidgetConjunction(Activity activity, String[] alienTag, OnTextConjunctionListener listener){
+    public WidgetConjunction(Activity activity, String[] alienTag, String tagCaption, OnTextConjunctionListener listener){
         this.activity = activity;
         this.onTextConjunctionListener = listener;
         this.alienTag = alienTag;
+        this.tagCaption = tagCaption;
     }
 
     public void breakContent(String htmlContent){
@@ -63,29 +70,31 @@ public class WidgetConjunction {
             switch (codeView){
                 case 0:
                     TextView tv = new TextView(activity);
-                    tv.setPadding(25, 5, 20, 30);
+                    tv.setPadding(25, 5, 20, 10);
                     onTextConjunctionListener.callBackForOpenTextView(renderTextContent(tv, ca.getP(), activity));
                     break;
                 case 1:
                     String urlImage = resolveUrlImage(ca.getP());
-                    String captionImage = resolveCaptionImage(ca.getP());
-                    ImageView im = new ImageView(activity);
-                    Picasso.with(activity)
-                            .load(urlImage)
-                            .memoryPolicy(MemoryPolicy.NO_STORE, MemoryPolicy.NO_CACHE)
-                            //.error(R.mipmap.ic_launcher)
-                            .into(im);
+                    String captionImage = resolveCaptionImage(ca.getP(), tagCaption);
+                    OpenImageView im = new OpenImageView(activity, urlImage);
 
                     TextView txCaption = new TextView(activity);
-                    txCaption.setText(captionImage);
-                    txCaption.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-                    txCaption.setTextSize(14f);
-                    txCaption.setTypeface(null, Typeface.BOLD);
-                    txCaption.setGravity(Gravity.CENTER);
-
+                    if(captionImage != null){
+                        txCaption.setText(captionImage);
+                        txCaption.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                        txCaption.setTextSize(14f);
+                        txCaption.setTypeface(null, Typeface.BOLD);
+                        txCaption.setGravity(Gravity.CENTER);
+                    }
                     onTextConjunctionListener.callBackForOpenImageView(txCaption, im);
                     break;
                 case 2:
+                    // youtube
+                    String ytThumbnail = getYoutubeTumbnail(ca.getP());
+                    OpenYoutubeView yt = new OpenYoutubeView(activity, ytThumbnail);
+                    String urlYt = resolveUrlIframe(ca.getP());
+                    onTextConjunctionListener.callBackForYoutubeView(yt, urlYt);
+
                     break;
                 case 3:
                     break;
@@ -137,10 +146,14 @@ public class WidgetConjunction {
         strBuilder.removeSpan(span);
     }
 
-    private String resolveCaptionImage(String p) {
+    private String resolveCaptionImage(String p, String tagCaption) {
         Document doc = Jsoup.parse(p);
-        Element capE = doc.select("figcaption").first();
-        return capE.text();
+        Element capE = doc.select(tagCaption).first(); //figcaption
+        if(capE != null){
+            return capE.text();
+        }else {
+            return null;
+        }
     }
 
     private String resolveUrlImage(String p) {
@@ -149,10 +162,16 @@ public class WidgetConjunction {
         return imgE.absUrl("src");
     }
 
+    public static String resolveUrlIframe(@NonNull String p) {
+        Document doc = Jsoup.parse(p);
+        Element ytE = doc.select("iframe").first();
+        return ytE.absUrl("src");
+    }
+
     private int resolvingViewContent(String article) {
 
         Document doc = Jsoup.parse(article);
-        Elements elements = doc.select(".image");
+        Elements elements = doc.select("img");
         if(!elements.isEmpty()){
             return 1; // image
         }
@@ -166,13 +185,19 @@ public class WidgetConjunction {
                 return 2;
             }
             else if(src.contains("instagram") || src.contains("twitter.com")){
-                //Timber.d("CONJUNCTION INSTAGRAM");
                 return 3;
             }
         }
 
         return 0; // default text
+    }
 
+    private static String getYoutubeTumbnail(@NonNull String p) {
+        Document doc = Jsoup.parse(p);
+        Element ytE = doc.select("iframe").first();
+        String url = ytE.absUrl("src");
+        String idYoutube = url.substring(url.lastIndexOf('/') + 1, url.length());
+        return TextUtil.getUrlforYoutubeThumbnail(idYoutube);
     }
 
     /**
@@ -232,6 +257,39 @@ public class WidgetConjunction {
         while(--i >= 0 && Character.isWhitespace(source.charAt(i))) {
         }
         return source.subSequence(0, i+1);
+    }
+
+
+    public static class Builder {
+
+        private String tagCaption;
+        private Activity activity;
+        private String[] alienTag;
+        private OnTextConjunctionListener listener;
+
+        public Builder(Activity activity){
+            this.activity = activity;
+        }
+
+        public Builder setTagCaption(String tagCaption) {
+            this.tagCaption = tagCaption;
+            return this;
+        }
+
+        public Builder setAlienTag(String[] alienTag){
+            this.alienTag = alienTag;
+            return this;
+        }
+
+        public Builder setOnTextConjunctionListener(OnTextConjunctionListener listener){
+            this.listener = listener;
+            return this;
+        }
+
+        public WidgetConjunction build(){
+            return new WidgetConjunction(activity, alienTag, tagCaption, listener);
+        }
+
     }
 
 }
