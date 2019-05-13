@@ -8,10 +8,17 @@
 <p>This is how to use it</p>
 <div class="highlight highlight-source-java">
 <pre>
-String articleHtml = "" //---> Your input article from HTML
-String[] tagForWrapping = {"figure", "h3"}  //--> tag which is not wrapping by <p></p>
-WidgetConjunction conjunction = new WidgetConjunction(this, tagForWrapping,
-                new WidgetConjunction.OnTextConjunctionListener() {
+private LinearLayout content;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        content = findViewById(R.id.content);
+        // initialize html conjunction
+        String articleHtml = "your_html_article";
+        String[] tagForWrapping = {"figure", "img", "h3", "iframe"};
+        WidgetConjunction conjunction1 = new WidgetConjunction.Builder(this)
+                .setOnTextConjunctionListener(new WidgetConjunction.OnTextConjunctionListener() {
                     @Override
                     public void callBackForOpenTextView(TextView tv) {
                         content.addView(tv);
@@ -19,13 +26,16 @@ WidgetConjunction conjunction = new WidgetConjunction(this, tagForWrapping,
                     @Override
                     public void callBackForOpenImageView(TextView cap, OpenImageView im) {
                         content.addView(im);
-                        //content.addView(cap);
+                        //content.addView(cap); //if you need caption below of image, but make sure your caption already wrap insid
                     }
                     @Override
                     public void callBackForYoutubeView(OpenYoutubeView openYoutubeView, String ytID) {
                         content.addView(openYoutubeView);
                         Log.d(TAG, "callBackForYoutubeView: YoutubeID " + ytID);
                     }
-                });
-        conjunction.breakContent(articleHtml);
-        </pre></div>
+                })
+                .setAlienTag(tagForWrapping)
+                .setTagCaption("figcaption")
+                .build();
+        conjunction1.breakContent(articleHtml);
+    }</pre></div>
