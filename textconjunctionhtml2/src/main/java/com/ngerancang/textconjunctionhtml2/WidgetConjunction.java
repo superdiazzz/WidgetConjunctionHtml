@@ -1,7 +1,6 @@
 package com.ngerancang.textconjunctionhtml2;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.support.annotation.NonNull;
@@ -14,16 +13,13 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.ngerancang.textconjunctionhtml2.model.ContentArticle;
 import com.ngerancang.textconjunctionhtml2.widget.OpenImageView;
-import com.ngerancang.textconjunctionhtml2.widget.OpenTextView;
+import com.ngerancang.textconjunctionhtml2.widget.OpenRelativeLayout;
 import com.ngerancang.textconjunctionhtml2.widget.OpenYoutubeView;
-import com.squareup.picasso.MemoryPolicy;
-import com.squareup.picasso.Picasso;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -38,6 +34,7 @@ public class WidgetConjunction {
     private static final String TAG = "WidgetConjunction";
 
     private Activity activity;
+    private OpenRelativeLayout openRelativeLayout;
     private OnTextConjunctionListener onTextConjunctionListener;
     private String[] alienTag;
     private String tagCaption;
@@ -52,11 +49,12 @@ public class WidgetConjunction {
     }
 
     // initialize
-    public WidgetConjunction(Activity activity, String[] alienTag, String tagCaption, OnTextConjunctionListener listener){
+    public WidgetConjunction(Activity activity, String[] alienTag, String tagCaption, OpenRelativeLayout orLayout, OnTextConjunctionListener listener){
         this.activity = activity;
         this.onTextConjunctionListener = listener;
         this.alienTag = alienTag;
         this.tagCaption = tagCaption;
+        this.openRelativeLayout = orLayout;
     }
 
     public void breakContent(String htmlContent){
@@ -76,7 +74,7 @@ public class WidgetConjunction {
                 case 1:
                     String urlImage = resolveUrlImage(ca.getP());
                     String captionImage = resolveCaptionImage(ca.getP(), tagCaption);
-                    OpenImageView im = new OpenImageView(activity, urlImage);
+                    OpenImageView im = new OpenImageView(activity, urlImage, openRelativeLayout);
 
                     TextView txCaption = new TextView(activity);
                     if(captionImage != null){
@@ -266,16 +264,29 @@ public class WidgetConjunction {
         private Activity activity;
         private String[] alienTag;
         private OnTextConjunctionListener listener;
+        private OpenRelativeLayout layout;
 
-        public Builder(Activity activity){
+        public Builder(Activity activity, OpenRelativeLayout layout){
             this.activity = activity;
+            this.layout = layout;
         }
 
+        /**
+         * Determine your tag Caption type, jika bentuknya <tagCaption></tagCaption> maka ditulis "tagCaption"
+         * @param tagCaption jenis tag untuk caption gambar (bisa jadi berbeda-beda)
+         * @return
+         */
         public Builder setTagCaption(String tagCaption) {
             this.tagCaption = tagCaption;
             return this;
         }
 
+        /**
+         * Tags which missed from observed from library, jika ada tag yang beda sendiri dan ingin ditangkap untuk
+         * ditampilakn kebentuk Widgetnya
+         * @param alienTag tag yang Asing dan tidak tertangkap oleh crawler library ini
+         * @return
+         */
         public Builder setAlienTag(String[] alienTag){
             this.alienTag = alienTag;
             return this;
@@ -287,7 +298,7 @@ public class WidgetConjunction {
         }
 
         public WidgetConjunction build(){
-            return new WidgetConjunction(activity, alienTag, tagCaption, listener);
+            return new WidgetConjunction(activity, alienTag, tagCaption, layout, listener);
         }
 
     }

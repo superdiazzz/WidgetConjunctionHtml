@@ -2,12 +2,13 @@ package com.ngerancang.textconjunctionhtml;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.ngerancang.textconjunctionhtml2.WidgetConjunction;
 import com.ngerancang.textconjunctionhtml2.widget.OpenImageView;
+import com.ngerancang.textconjunctionhtml2.widget.OpenRelativeLayout;
 import com.ngerancang.textconjunctionhtml2.widget.OpenYoutubeView;
 
 public class MainActivity extends AppCompatActivity {
@@ -15,6 +16,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
     private LinearLayout content;
+    private OpenRelativeLayout layout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         content = findViewById(R.id.content);
-
+        layout = findViewById(R.id.openRelativeLayout);
         // initialize html conjunction
         String articleHtml = "<p><b>JUDUL ATAS</b></p>\n" +
                 "<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>\n" +
@@ -43,8 +45,7 @@ public class MainActivity extends AppCompatActivity {
                 "<iframe width=\"420\" height=\"345\" src=\"https://www.youtube.com/embed/0uRwqpDX1Us\"</iframe>";
 
         String[] tagForWrapping = {"figure", "img", "h3", "iframe"};
-
-        WidgetConjunction conjunction1 = new WidgetConjunction.Builder(this)
+        WidgetConjunction conjunction1 = new WidgetConjunction.Builder(this, layout)
                 .setOnTextConjunctionListener(new WidgetConjunction.OnTextConjunctionListener() {
                     @Override
                     public void callBackForOpenTextView(TextView tv) {
@@ -61,14 +62,15 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void callBackForYoutubeView(OpenYoutubeView openYoutubeView, String ytID) {
                         content.addView(openYoutubeView);
-                        Log.d(TAG, "callBackForYoutubeView: YoutubeID " + ytID);
+                        openYoutubeView.setOnClickListener(v -> {
+                            Toast.makeText(MainActivity.this, "ID url yt : "+ytID, Toast.LENGTH_SHORT).show();
+                        });
+                        //Log.d(TAG, "callBackForYoutubeView: YoutubeID " + ytID);
                     }
                 })
                 .setAlienTag(tagForWrapping)
                 .setTagCaption("figcaption")
                 .build();
         conjunction1.breakContent(articleHtml);
-
-
     }
 }
