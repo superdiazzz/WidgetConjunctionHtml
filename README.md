@@ -39,3 +39,7 @@ private LinearLayout content;
                 .build();
         conjunction1.breakContent(articleHtml);
     }</pre></div>
+    <pre><h3>Result</h3>
+    <img src="https://media.giphy.com/media/IhOPNj4VHDon7wamf7/giphy.gif" alt="gambar">
+    </pre>
+    
