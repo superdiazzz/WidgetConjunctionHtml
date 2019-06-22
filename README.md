@@ -3,7 +3,7 @@
 
 <h3>Gradle</h3>
 <div class="highlight highlight-source-groovy">
-  <pre>implementation 'com.ngerancang.textconjunctionhtml2:WidgetConjunctionHtml:0.2.0'</pre></div>
+  <pre>implementation 'com.ngerancang.textconjunctionhtml2:WidgetConjunctionHtml:0.3.0'</pre></div>
 
 <p>This is how to use it</p>
 <div class="highlight highlight-source-java">
